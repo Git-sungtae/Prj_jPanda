@@ -47,7 +47,7 @@
 					const messageElem = $("<span>").text(receivedChat.message)
 													.addClass("chat-message lh-base text-start badge text-bg-success p-2 text-wrap")
 													.attr('data-bs-toggle', "modal")
-													.attr('data-bs-target', 'report-chat-modal')
+													.attr('data-bs-target', '#report-chat-modal')
 													.data('chat-no', receivedChat.chatNo);
 					const timeElem = $("<span>").text(getTime(receivedChat.chatDate)).addClass("chat-time badge rounded-pill text-bg-light");
 					chatElem.append(messageElem);
@@ -415,6 +415,7 @@
 		    $('#chat-report-name').val($('#chat-partner-list .active').text());
 		    $('#chat-report-message').val($(this).text());
 		    $('#report-chat-no').val($(this).data('chat-no'));
+		    $('#chat-report-issue').empty();
 		});	
 		
 		//chat-report-modal 신고버튼 클릭 시 호출되는 함수
