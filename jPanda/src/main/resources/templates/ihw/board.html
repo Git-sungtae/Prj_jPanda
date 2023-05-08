@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="/common/layout/default-layout">
+
+<!-- 페이지 제목 입력 -->
+<th:block layout:fragment="title">
+	<title>판매 게시판</title>
+</th:block>
+
+<!-- 현재 화면에서만 사용하는 css -->
+<th:block layout:fragment="css">
+	<style type="text/css">
+/* 페이지 전체 레이아웃 */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+} 
+
+/* 공통 스타일 */
+ul, li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}  
+
+
+/* 게시판 리스트 */
+.list-container, .sell-board {
+  margin: 80px auto;
+  max-width: 1000px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 사이드바 대분류 카테고리 */
+#top-category {
+  position: absolute;
+  float: left;
+  left: 20px;
+  top: 200px;
+  width: 200px;
+  border: 1px solid #ccc;
+  margin-left: 20px;
+  text-align: center;
+  margin: 20px 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+  flex-basis: 45%;
+}
+
+/* 중분류 카테고리 */
+#lower-category {
+  text-align: center;
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.bamboo-imges {
+  width: 170px; /* 별점 이미지 하나당 16px이므로 5개의 별점을 표시하기 위해 80px 지정 */
+  height: 20px;
+}
+
+.bamboo-imges img {
+  width: 20px;
+  height: 20px;
+}
+
+/* 컨테이너 */
+#defalut-list {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column; /* 아이템들을 수직 방향으로 배치 */
+  flex-direction: row;
+  align-items: center; /* 아이템들을 가운데 정렬 */
+  margin: 10px;
+}
+
+/* 카드 컨테이너 */
+.talent-ajax-list {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  height: 450px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  margin 10px;
+  margin-bottom: 20px;
+  overflow: hidden; /* 아이템 내부의 내용이 넘칠 경우, 숨김 처리 */
+}
+
+/* 이미지 */
+.talent-image {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+/* 제목 */
+.talent-title {
+  display: block;
+  font-size: 18px;
+  font-weight: bold;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  overflow: hidden; /* 넘치는 텍스트는 숨김 처리 */
+  text-overflow: ellipsis; /* 넘치는 텍스트는 생략 부호(...)로 대체 */
+}
+
+/* 요약 */
+.talent-summary {
+  display: block;
+  width: 190px;
+  height: 120px;
+  font-size: 16px;
+  overflow: hidden; /* 넘치는 텍스트는 숨김 처리 */
+  text-overflow: ellipsis; /* 넘치는 텍스트는 생략 부호(...)로 대체 */
+}
+
+/* 판매자 */
+.talent-seller {
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+
+/* 가격 */
+.talent-price {
+  font-size: 15px;
+  font-weight: bold;
+  color: gray;
+  margin-bottom: 5px;
+  text-decoration: line-through;
+}
+
+/* 세일 가격 */
+.talent-sale-price {
+  font-size: 17px;
+  font-weight: bold;
+  color: green;
+  margin-bottom: 5px;
+}
+
+/* 대나무 점수 */
+.talent-bamboo-score {
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+
+/* 선택 가능 */
+.talent-ajax-list:hover, .topCategoryList:hover {
+  cursor: pointer;
+  box-shadow: 0px 0px 10px #ccc;
+}
+
+.sell-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+}
+
+.talent-page {
+	display: inline-block;
+	border: 1px solid #EAEAEA;
+	width: 30px;
+	height: 30px;
+	cursor: pointer;
+}
+
+.talent-page{
+	text-align: center;
+	line-height: 30px; /* 중간 높이로 해줌  */
+}
+
+#page{
+	text-align: center;
+	margin-top: 30px;
+}
+
+.talent-page {
+	text-decoration: none;
+	color: black;
+}
+
+</style>
+	<!-- 채팅 기능이 필요없는 페이지는 아래 한줄 지워주세요  -->
+	<th:block th:replace="/common/style/chat-css :: chatCssFragment"></th:block>
+</th:block>
+
+<div>
+	<th:block layout:fragment="content">
+	 <div id="top-category">
+    	<h2>대분류 카테고리</h2>
+    	<ul th:each="upperCategory : ${upperCategoryList}">	
+    		<li class="topCategoryList" th:text="${upperCategory.item}" th:data-upperCategoryNo="${upperCategory.categoryNo}"></li>
+    	</ul>
+    </div>
+    
+    
+    <div id="lower-category">
+    	<h2>중분류 카테고리</h2>
+			<select id="lower-category-list">
+  				<option value="">==대분류를 선택해주세요==</option>
+			</select> <br>
+			
+			<input type="radio" id="radio1" name="group" class="radio-filter" value="reg_date" checked="checked">
+			<label for="radio1">최신순</label>
+			
+			<input type="radio" id="radio2" name="group" class="radio-filter" value="view_count">
+			<label for="radio2">인기순</label><br>
+			
+			<input type="radio" id="radio3" name="group" class="radio-filter" value="bambooScore">
+			<label for="radio3">평점순</label>
+			
+			<input type="radio" id="radio4" name="group" class="radio-filter" value="sale_bamboo">
+			<label for="radio4">높은 가격순</label><br>
+			
+			<input type="radio" id="radio5" name="group" class="radio-filter" value="sale_bambooA">
+			<label for="radio5">낮은 가격순</label><br>
+    </div>
+	
+	<div class="sell-btn">
+		<button id="sell-insert">판매글 등록</button>
+	</div>
+	<div class="sell-board">
+	    <ul id="defalut-list"></ul>
+	</div>
+	
+	<div id="page"></div>
+		<!-- 채팅 기능이 필요없는 페이지는 아래 한줄 지워주세요  -->
+		<th:block th:replace="/common/fragment/chat :: chatFragment"></th:block>
+	</th:block>
+</div>
+
+<!-- 현재 화면에서만 사용하는 js -->
+<th:block layout:fragment="script">
+	<script th:inline="javascript">
+	
+	
+   function checkForHash(){
+	      if(location.hash){
+	         // 한글 깨지지 않게 나오도록 처리
+	         var hash = decodeURI(location.hash);
+	         var currentPage = hash.replace("#","");
+	         updateList(currentPage);
+	      }else{
+	         updateList(1);
+	      } 
+	   };
+	   
+	   var search = [[${search}]];
+	   $('#search').val(search);   
+
+	// 재능 리스트 ajax로 불러오기
+	function updateList(currentPage){
+		let upperCategoryNo = $('.selected').data('uppercategoryno');
+	 	let lowerCategoryNo = $('#lower-category-list').val();
+	 	let filter =  $(".radio-filter:checked:first").val();
+	 	$.ajax({
+	 		url : "/board/talents-list",
+	 		type : 'GET',
+	 		data : {upperCategoryNo : upperCategoryNo,
+	 				lowerCategoryNo : lowerCategoryNo,
+	 				filter 			: filter,
+	 				search			: search,
+	 				currentPage		: currentPage
+	 		},
+	 		dataType : 'json',
+	 		success : function(map){
+	 			$('#defalut-list').empty();
+	 	        console.log(map);
+	 	       	map.talentList.forEach(function(talent){
+	       		 	const li = $('<li>').appendTo('#defalut-list').addClass('talent-ajax-list');
+		            $('<img>').attr('src', talent.mainImg).addClass('talent-image').appendTo(li);
+		            $('<span>').addClass('talent-title').text(talent.title).appendTo(li);
+		            $('<span>').addClass('talent-summary').text(talent.summary).appendTo(li);
+		            $('<span>').addClass('talent-seller').text('강사: '+ talent.name).appendTo(li);
+		            $('<span>').addClass('talent-price').text('정상 가격: '+ talent.bamboo).appendTo(li);
+		            $('<span>').addClass('talent-sale-price').text('판매 가격: '+ talent.saleBamboo).appendTo(li);
+		            $('<span>').addClass('talent-bamboo-score').text(talent.bambooScore).appendTo(li);
+		            $('<img>').addClass('bamboo-imges').appendTo(li);
+		            
+		            // 페이징
+		            var filters = map.filters;
+	                var startNum = parseInt(filters.startNum);
+	                var lastNum = parseInt(filters.lastNum);
+	                var filtersDiv = $('#page');
+	    			
+	                // currentPage 해쉬에 저장
+	                location.hash = filters.currentPage;
+	                
+	                // 기존 페이지 번호 삭제
+	                filtersDiv.empty();
+	                
+	                var page = $('<a></a>').addClass('talent-page').text('<');
+	                filtersDiv.append(page);
+	                
+	           	  	// 페이지 번호 생성
+	                for (var i=startNum; i<=lastNum; i++) {
+	                    var page = $('<a></a>').addClass('talent-page').text(i);
+	    				if(filters.currentPage == i){
+	    					page.css('background-color', '#EAEAEA');
+	    				}
+	                    filtersDiv.append(page);
+	                }
+	                filtersDiv.append($('<a></a>').addClass('talent-page').text('>'));
+	           	  	
+					$('.talent-page').one('click', function(){
+						if($(this).text() === '<'){
+							if(parseInt(filters.currentPage) === 1){
+								updateList(filters.currentPage);
+							}else{
+								updateList(parseInt(filters.currentPage) - 1);
+							}
+						}else if($(this).text() === '>'){
+							if(parseInt(filters.currentPage) === parseInt(filters.totalPage)){
+								updateList(filters.currentPage);
+							}else{
+								updateList(parseInt(filters.currentPage) + 1);
+							}
+						}else{
+							updateList($(this).text());
+						}
+					});
+		            li.click(function() {
+		                location.href = '/talents/talent/' + talent.talentNo;
+		            });
+		        });
+	 	       	
+		 	   	/* 별점 평균에 따라  밤부 스코어 이미지 출력 */
+	 	        $(function rivewImg() {
+	 	            var starImages = ['bamboo0.png', 'bamboo0.5.png', 'bamboo1.png', 'bamboo1.5.png', 'bamboo2.png', 
+	 	          	  'bamboo2.5.png', 'bamboo3.png', 'bamboo3.5.png', 'bamboo4.png', 'bamboo4.5.png', 'bamboo5.png'];
+	 	            $('.talent-bamboo-score').each(function(){
+	 	            	
+	 	                var score = parseFloat($(this).text());
+	 	                if (score > 5) score = 5; // score가 5보다 크면 5로 고정
+	 	                var index;
+	 	                if (score < 0.49 || isNaN(score)) {
+	 	                  index = 0;
+	 	                } else if (score == 0.5) {
+	 	                  index = 1;
+	 	                } else if (score == 1) {
+	 	                  index = 2;
+	 	                } else if (score == 1.5) {
+	 	                  index = 3;
+	 	                } else if (score == 2) {
+	 	                  index = 4;
+	 	                } else if (score == 2.5) {
+	 	                  index = 5;
+	 	                } else if (score == 3) {
+	 	                  index = 6;
+	 	                } else if (score == 3.5) {
+	 	                  index = 7;
+	 	                } else if (score == 4) {
+	 	                  index = 8;
+	 	                } else if (score == 4.5) {
+	 	                  index = 9;
+	 	                } else if (score == 5) { // score가 5일 때
+	 	                  index = 10;
+	 	                }
+	 	                $(this).next('.bamboo-imges').attr('src', '/image/bambooScore/' + starImages[index]);
+	 	           });
+		 	    });
+	 		},
+	 	    error: function(xhr, status, error) {
+	 	        console.log(xhr);
+	 	        alert('잠시 후 다시 시도해주세요.');
+	 	    }
+	 	});
+	 	
+	}		
+
+	// 세부 필터 클릭 시 updateList(); 실행
+	$('.radio-filter').click(function(){	
+		updateList(1);
+	});
+
+	// 중분류 카테고리 클릭 시 updateList(); 실행
+	$('#lower-category-list').on('change', function() {
+		updateList(1);
+	});
+		
+
+	// 대분류 카테고리 클릭시 선택 되어 있던 대분류 카테고리 클래스 삭제 후 새로 클릭 된 카테고리 selected 클래스 추가
+	$('.topCategoryList').click(function(){
+		$('.topCategoryList').removeClass('selected');
+		$(this).addClass('selected');
+		// 중분류 카테고리 리스트 불러오기
+		$.ajax({
+			url : "/board/categorys/lower-category-nos",
+		    type : 'GET',
+		   	data : {upperCategoryNo : $('.selected').data('uppercategoryno')},
+		   	dataType : 'json',
+		   	success : function(lowerCategoryList){
+		   		console.log(lowerCategoryList);
+		   		$('#lower-category-list').empty();
+		   		$('#lower-category-list').append($('<option>').val('').text('==중분류 선택=='));
+		   		lowerCategoryList.forEach(function(lowerCategory){
+		   			$('#lower-category-list').append($('<option>').val(lowerCategory.categoryNo).text(lowerCategory.item));
+		   		});
+		   	 	updateList(1);
+		   	}
+		});
+	});
+
+	
+	// 판매글 등록 버튼 로그인 여부 확인
+	function sellInsertBtn(){
+	    var memberId = [[${memberId}]];
+	    console.log(memberId);
+	    
+	    if (memberId != null) {
+	      location.href = "/talent/write-form";
+	    } else {
+	      alert("로그인이 필요한 서비스 입니다.");
+	      location.href = "/login";
+	    }
+	  }
+	  document.getElementById("sell-insert").addEventListener("click", sellInsertBtn);
+	  
+	  window.onload = function() {
+		  console.log([[${memberId}]]);
+		};
+		
+	// 검색	
+  	$(function() {
+	      checkForHash();
+	   });
+		
+	</script>
+	
+		<!-- 채팅 기능이 필요없는 페이지는 아래 한줄 지워주세요  -->
+	<th:block th:replace="/common/script/chat-js :: chatJsFragment"></th:block>
+</th:block>
+</html>

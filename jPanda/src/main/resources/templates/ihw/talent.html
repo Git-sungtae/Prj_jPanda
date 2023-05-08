@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="/common/layout/default-layout">
+
+<!-- 페이지 제목 입력 -->
+<th:block layout:fragment="title">
+	<title>상세 페이지</title>
+</th:block>
+
+<!-- 현재 화면에서만 사용하는 css -->
+<th:block layout:fragment="css">
+	<style type="text/css">
+
+/* 페이지 전체 레이아웃 */
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* 리뷰  목록 */
+#review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ccc;
+  margin: 20px 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+  text-align: center;
+  flex-basis: 48%;
+}
+
+#review-list:hover {
+  background-color: #f2f2f2;
+}
+
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#top-title {
+  text-align: center;
+  margin-top: 20px;
+}
+
+#main-image {
+  margin-left: 5px;
+  float: left;
+}
+
+.side-info {
+  margin-right: 5px;
+  float: right;
+  text-align: center;
+}
+
+.content {
+  text-align: center;
+  margin-top: 20px;
+}
+
+
+
+.review-form {
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.review-form .form-group {
+  margin-bottom: 10px;
+}
+
+.review-form h3 {
+  display: inline-block;
+  width: 200px;
+  font-weight: bold;
+  margin-right: 10px;
+  text-align: center;
+}
+
+.review-form input[type="text"],
+.review-form select,
+.review-form textarea {
+  border: 1px solid #ccc;
+  padding: 5px;
+  width: calc(100% - 110px);
+  box-sizing: border-box;
+}
+
+.review-form select {
+  width: 110px;
+}
+
+.review-form textarea {
+  height: 150px;
+}
+
+.review-form input[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.review-form input[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+.review-form input[type="submit"]:focus {
+  outline: none;
+}
+
+
+.review-list {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  list-style: none;
+}
+
+
+.review-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.review-list li:last-child {
+  border-bottom: none;
+}
+
+.review-list li p {
+  margin: 0;
+  font-size: 14px;
+}
+
+#load-more-button {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#load-more-button:hover {
+  background-color: #0069d9;
+}
+
+#main-image {
+  width: 420px;
+  height: 450px;
+}
+
+.bamboo-imges{
+  width: 100px; /* 별점 이미지 하나당 16px이므로 5개의 별점을 표시하기 위해 80px 지정 */
+  height: 21px;
+}
+
+.quick-menu {
+  position: sticky;
+  top: 0;
+  bottom: 20px;
+  left: 20px;
+  transform: translateY(-50%);
+}
+
+
+</style>
+	<!-- 채팅 기능이 필요없는 페이지는 아래 한줄 지워주세요  -->
+	<th:block th:replace="/common/style/chat-css :: chatCssFragment"></th:block>
+</th:block> 
+
+<div>
+	<th:block layout:fragment="content">
+	<body>
+		<!-- 판매 정보  -->
+	<div class="container">
+		<h1 id="top-title" th:text="${talent.title}"></h1>
+		<img id="main-image" th:src="${talent.mainImg}" alt="상품 이미지">
+		
+		<div class="side-info">
+			  강사 : 		<div th:text="${talent.name}"></div>
+			  요약 설명 : 	<div th:text="${talent.summary}"></div>
+			  정상 가격 : 	<div th:text="${talent.bamboo}"></div>
+			  판매 가격 : 	<div th:text="${talent.saleBamboo}"></div>
+		         평균 별점 :	<div id="review-filter"></div>
+		         
+		 	<div class="buy-btn">
+			    <button id="buy-btn" th:data-talentno="${talent.talentNo}" th:data-salebamboo="${talent.saleBamboo}">구매하기</button>
+ 			</div>
+		</div>
+		 
+		<div class="etc-btn">
+			<input type="hidden" id="login-id" value="${memberId}">
+			<button th:if="${talent.sellerId == memberId}" id="modify-btn" th:data-talentno="${talent.talentNo}">게시물 수정</button>
+			<button th:if="${talent.sellerId == memberId}" id="delete-btn" th:data-talentno="${talent.talentNo}">게시물 삭제</button>
+			<button id="report-btn" th:data-talentno="${talent.talentNo}" th:data-sellerid="${talent.sellerId}">게시물 신고하기</button>
+		</div>
+		
+		<div class="quick-move">
+			<a href="#review-list">리뷰</a>|<a href="#content">상세 내용</a>|<a href="">상담 및 채팅</a>
+		</div>
+		
+		<div class="content">
+			<a name="content"></a>
+				상세 내용 : <div class="content-detail" th:utext="${talent.content}"></div>
+		</div>
+	</div>
+	
+	<!-- 리뷰 작성 폼  -->
+	<form class="review-form" id="insert-review-form" method="post">
+	    <h3 class="insert-bambooScore">리뷰를 남겨주세요</h3><br>
+	    <select id="insert-bambooScore" name="bambooScore">
+	        <option value="5.0">5점</option>
+	        <option value="4.5">4.5점</option>
+	        <option value="4.0">4점</option>
+	        <option value="3.5">3.5점</option>
+	        <option value="3.0">3점</option>
+	        <option value="2.5">2.5점</option>
+	        <option value="2.0">2점</option>
+	        <option value="1.5">1.5점</option>
+	        <option value="1.0">1점</option>
+	    </select><br>
+	    
+	    <div>
+	    	리뷰 내용 : <input id="insert-content" name="content"></input>
+	    </div>
+	    
+	 	<div id="insert-review-button">
+	 		<button type="button" th:onclick="'reviewInsert(' + ${talent.talentNo} + ')'">작성 완료</button>
+	 	</div>
+	</form>
+	
+	<!-- 리뷰 수정 폼  -->
+	<form class="review-form" id="update-review-form" method="post" style="display: none;">
+	    <h3 class="update-bambooScore">리뷰를 남겨주세요</h3><br>
+	    <select id="update-bambooScore" name="bambooScore">
+		    <option value="5.0" selected="selected">5점</option>
+		    <option value="4.5">4.5점</option>
+		    <option value="4.0">4점</option>
+		    <option value="3.5">3.5점</option>
+		    <option value="3.0">3점</option>
+		    <option value="2.5">2.5점</option>
+		    <option value="2.0">2점</option>
+		    <option value="1.5">1.5점</option>
+		    <option value="1.0">1점</option>
+	    </select><br>
+	    
+	    <div>
+	    	리뷰 내용 : <input id="update-content" name="content"></input>
+	   		<input id="review-no" value="" type="hidden">
+	    </div>
+	   		
+	 	<div id="update-review-button">
+	 		<button type="button" th:onclick="'reviewUpdate(' + ${talent.talentNo} + ')'">수정 완료</button>
+	 	</div>
+	</form>
+	
+	<div class="review-list">
+	<a name="review-list"></a>
+	<ul id="review-list">
+		<li th:each="review : ${reviewList}">
+			작성자 : <span th:text="${review.reviewerId}"></span>
+			<span th:text="${#strings.substring(review.reviewDate, 0, 10)}"></span>
+			<span class="bamboo-score" th:text="${review.bambooScore}" style="display: none;"></span>
+			<img class="bamboo-imges"><br>
+			내용 : <span th:text="${review.content}"></span>
+			
+			<div class="review-btn">
+		 		<input type="hidden" id="login-id" value="${memberId}">
+		 		<button th:if="${review.reviewerId == memberId}" type="button" class="modifyReview" th:data-reviewno="${review.reviewNo}" th:data-content="${review.content}" th:data-reviewerid="${review.reviewerId}">수정</button>
+				<button th:if="${review.reviewerId == memberId}" type="button" class="deleteReview" th:data-reviewno="${review.reviewNo}" th:data-talentno="${talent.talentNo}" th:data-reviewerid="${review.reviewerId}">삭제</button>
+	 		</div>
+        </li>
+    </ul>
+	</div>
+	
+	<div class="quick-menu">
+  <ul>
+    <li><a href="#">맨위로 이동</a></li>
+    <li><a href="#content">상세 내용</a></li>
+    <li><a href="#review-list">리뷰</a></li>
+  </ul>
+	</div>
+	
+	  <!-- 신고하기 Modal -->
+	<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="reportModalLabel">신고하기</h5>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	      </div>
+	      <form method="post">
+	        <div class="modal-body">
+	            <input class="form-control" id="reportDate" name="reportDate" readonly>
+	          <div class="mb-3">
+	            <label for="reporterId" class="form-label">신고자 ID</label>
+	            <input type="text" class="form-control" id="reportId" name="reportId" readonly>
+	          </div>
+	          <div class="mb-3">
+	            <label for="reportedId" class="form-label">신고 받는 ID</label>
+	            <input type="text" class="form-control" id="blackId" th:name="blackId" th:value="${talent.sellerId}" readonly>
+	          </div>
+	          <div class="mb-3">
+	            <label for="talentTitle" class="form-label">게시물 제목</label>
+	            <input type="text" class="form-control" id="title" name="title" th:value="${talent.title}" readonly>
+	          </div>
+	          <div class="mb-3">
+	            <label for="reportReason" class="form-label">신고 사유</label>
+	            <textarea class="form-control" id="issue" name="issue" rows="3"></textarea>
+	          </div>
+	          <input type="hidden" name="talentNo" id="talentNo" th:value="${talent.talentNo}">
+	        </div>
+	        <div class="modal-footer">
+	          <button type="button" class="cancel-btn" data-bs-dismiss="modal">취소</button>
+	          <button type="submit" class="submit-btn" id="reportButton">제출</button>
+	        </div>
+	      </form>
+	    </div>
+	  </div>
+	</div>
+ 
+		<!-- 채팅 기능이 필요없는 페이지는 아래 한줄 지워주세요  -->
+	<th:block th:replace="/common/fragment/chat :: chatFragment"></th:block>
+	</th:block> 
+</div>
+<!-- 현재 화면에서만 사용하는 js -->
+<th:block layout:fragment="script">
+	<script th:inline="javascript">
+	
+	const userId = [[${#session.getAttribute('memberId')}]];
+	console.log(userId);
+	
+	
+	/* 신고하기 모달 */
+	const reportModal = document.getElementById('reportModal')
+	const reportButton = document.getElementById('report-btn')
+	reportButton.addEventListener('click', () => {
+		if(!userId){
+			alert('로그인이 필요한 서비스 입니다.');
+			location.href= "/login";
+		} else {
+			const reportId = userId
+		  	const blackId = document.getElementById('blackId').value
+		  	const title = document.getElementById('title').value
+		  	const issue = document.getElementById('issue')
+			const talentNo = document.getElementById("talentNo").value
+		  	const reportDate = getNow();
+		  	reportModal.querySelector('#reportDate').value = reportDate
+		  	reportModal.querySelector('#reportModalLabel').textContent = '신고하기'
+		  	reportModal.querySelector('#reportId').value = reportId
+		  	reportModal.querySelector('#blackId').value = blackId
+		  	reportModal.querySelector('#title').value = title
+		  	reportModal.querySelector('#issue').value = issue.value
+		  	reportModal.querySelector('form').setAttribute('action', "/talents/talent/report/" +talentNo);
+		  	const cancelButton = reportModal.querySelector('.cancel-btn')
+		  	cancelButton.addEventListener('click', () => {
+			    reportModal.querySelector('form').reset()
+			});
+		  	const submitButton = reportModal.querySelector('.submit-btn')
+		  	submitButton.addEventListener('click', () => {
+		    	reportModal.querySelector('form').submit()
+		  	});
+		  	const modal = new bootstrap.Modal(reportModal)
+		  	modal.show()
+		}
+	});
+		
+	
+	// 퀵 메뉴 설정
+	$(document).ready(function(){
+		  var currentPosition = parseInt($(".quick-menu").css("top"));
+		  $(window).scroll(function() {
+		    var position = $(window).scrollTop(); 
+		    $(".quick-menu").stop().animate({"top":position+currentPosition+"px"},1000);
+		  });
+		});
+	
+	
+	// 구매하기 버튼
+	$(document).on('click', '#buy-btn', function(){
+		if(!userId){
+			alert('로그인이 필요한 서비스 입니다.');
+			location.href = "/login";
+		} else {
+			if(confirm("정말로 구매 하시겠습니까? " + $(this).data('salebamboo') + " 포인트가 차감 됩니다.")){
+				const talentNo = $(this).data('talentno');
+				const useBamboo = $(this).data('salebamboo');
+				let bambooUse = {
+			        talentNo     : talentNo,
+			        useBamboo    : useBamboo,
+			        purchaseDate : new Date(Date.now())
+			    };
+				console.log(bambooUse);
+				$.ajax({
+					url 	: "/talents/talent/purchase",
+					method 	: 'POST',
+					data  	: JSON.stringify(bambooUse),
+					contentType: 'application/json',
+					dataType : 'json',
+					success : function(bambooUseInsert){
+						if (bambooUseInsert === -1){
+							alert("이미 구매한 상품 입니다.");
+						} else if (bambooUseInsert === 0){
+							alert("잔액이 부족합니다. 충전 후 구매 해주세요.");
+							location.href= "/charge";
+						} else if (bambooUseInsert === 1){
+							alert("구매가 완료 되었습니다. 감사합니다.");
+							location.href= "/board";
+						} else {
+							alert("구매 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+						}
+					},
+					error : function(xhr, status, error){
+						console.log(xhr);
+						alert('잠시 후 다시 시도해주세요.');
+					}
+				});
+			}
+		}	
+	});
+	
+	
+	 // 리뷰 리스트에 별점에 따른 밤부 이미지 출력
+	$(document).ready(function () {
+		  var starImages = ['bamboo0.png', 'bamboo0.5.png', 'bamboo1.png', 'bamboo1.5.png', 'bamboo2.png',
+		                    'bamboo2.5.png', 'bamboo3.png', 'bamboo3.5.png', 'bamboo4.png', 'bamboo4.5.png', 'bamboo5.png'];
+		  $('.review-list span.bamboo-score').each(function () {
+			  var score = parseFloat($(this).text());
+             if (score > 5) score = 5; // score가 5보다 크면 5로 고정
+             var index;
+             if (score == 0) {
+               index = 0;
+             } else if (score == 0.5) {
+               index = 1;
+             } else if (score == 1) {
+               index = 2;
+             } else if (score == 1.5) {
+               index = 3;
+             } else if (score == 2) {
+               index = 4;
+             } else if (score == 2.5) {
+               index = 5;
+             } else if (score == 3) {
+               index = 6;
+             } else if (score == 3.5) {
+               index = 7;
+             } else if (score == 4) {
+               index = 8;
+             } else if (score == 4.5) {
+               index = 9;
+             } else { // score가 5일 때
+               index = 10;
+             }
+		    $(this).next('.bamboo-imges').attr('src', '/image/bambooScore/' + starImages[index]);
+		  });
+		});
+	
+
+	// 게시글 수정 버튼 눌렀을때 수정 페이지로 이동
+	$(document).on('click', '#modify-btn', function(){
+		// talentNo 값 가져오기
+		var talentNo = $(this).data('talentno');
+		location.href = '/talent/talents/' + talentNo + '/update-form';
+	});
+
+
+	//게시글 삭제 버튼 눌렀을때 업데이트로 판매 상태를 판매 종료로 변경
+	$(document).on('click', '#delete-btn', function(){
+	    // talentNo 값 가져오기
+	    var talentNo = $(this).data('talentno');
+	    if (confirm('정말로 게시물을 삭제하시겠습니까?')) {
+	        // 컨트롤러 이동
+	        location.href = '/talent/talents/updateStatus/' + talentNo;
+	    }
+	});
+
+
+	/* TimeStamp형식으로의 현재 Date 변환 */
+	function getNow(){
+		const now = new Date(Date.now());
+		const year = now.getFullYear();
+		const month = String(now.getMonth() + 1).padStart(2, '0');
+		const day = String(now.getDate()).padStart(2, '0');
+		const hours = String(now.getHours()).padStart(2, '0');
+		const minutes = String(now.getMinutes()).padStart(2, '0');
+		const seconds = String(now.getSeconds()).padStart(2, '0');
+		
+		const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+		
+		return formattedDate;
+	};
+
+
+	// 리뷰 인서트 
+	function reviewInsert(talentNo){
+		if( $("#insert-content").val().trim() == ''){
+			alert('내용을 입력해주세요');
+			return;
+		};  
+		$.ajax({
+		    type : 'POST',
+		    url : "/talents/talent/" + talentNo + "/reviews",
+		    data : JSON.stringify({
+				talentNo 	: talentNo,
+				bambooScore : $("#insert-bambooScore").val(),
+				content 	: $("#insert-content").val(),
+				reviewDate 	: Date.now()
+	   		}),
+		    contentType : "application/json",
+		    dataType :'json',
+		    success : function(result) {
+				console.log(result);
+				if(result == -1) {
+					alert("로그인이 필요한 서비스 입니다.");
+					location.href = "/login";
+				} else if (result == 0){
+					alert("상품을 구매한 사람만 리뷰를 남길 수 있습니다.");
+				} else {
+					location.reload();
+				}
+			},
+		    error : function(xhr, status, error) {
+		        console.log(xhr);
+		        alert('리뷰 작성에 실패하였습니다. 잠시 후 다시 시도해주세요.');
+		    }
+		});
+	}
+	
+	// 리뷰 업데이트 값 가져오기
+	$(document).on('click', '.modifyReview', function(){
+		// 기존에 있는 인서트 폼 숨기고 업데이트 폼 보여주기
+		$('#insert-review-form').hide();
+		$('#update-review-form').show();
+		// 기존 리뷰의 내용을 가져와서 업데이트 폼에 채워주기
+	   	$('#update-content').val($(this).data('content'));
+	   	$('#review-no').val($(this).data('reviewno'));
+	   	console.log($(this).data('content'));
+	   	console.log($(this).data('reviewno'));
+	});
+
+
+	// 리뷰 업데이트
+	function reviewUpdate(talentNo){
+		if( $("#update-content").val().trim() == ''){
+			alert('내용을 입력해주세요');
+			return;
+	};  
+		var reviewNo = $("#review-no").val();
+		console.log(reviewNo);
+	  	$.ajax({
+	  		type : 'PUT',
+	  		url : talentNo + "/reviews/" + reviewNo,
+			data : JSON.stringify({
+				talentNo 	: talentNo,
+			    reviewNo 	: reviewNo,
+			    bambooScore	: $("#update-bambooScore").val(),
+			    content		: $("#update-content").val(),
+			    reviewDate 	: Date.now()
+	 		 }),
+	  		    contentType : "application/json",
+	  			dataType : 'json',
+	  			success : function(review){
+					$('#review-list').empty();
+					console.log(review);
+					review.forEach(function(review){
+						const li = $('<li>').appendTo('#review-list');
+			        	$('<span>').text(review.reviewerId).appendTo(li);
+			        	$('<span>').text(getNow()).appendTo(li);
+			        	$('<span>').text(review.bambooScore).appendTo(li);
+			        	$('<span>').text(review.content).appendTo(li);
+			        	location.reload();
+			        	
+			        	const modifyBtn = 
+			        	$('<button>').attr('type', 'button').attr('class', 'modifyReview')
+		                .attr('data-reviewNo', review.reviewNo).attr('data-content', review.content)
+		                .text('수정');
+			        	
+						const deleteBtn = 
+						$('<button>').attr('type', 'button').attr('class', 'deleteReview').text('삭제');
+						$('<br>').appendTo(li);
+						modifyBtn.appendTo(li);
+						deleteBtn.appendTo(li);
+					});  
+	  			},
+				error : function(xhr, status, error) {
+			        console.log(xhr);
+			        alert('리뷰 수정에 실패하였습니다. 잠시 후 다시 시도해주세요.');
+			    }
+	  	});
+	}
+	  
+	
+	// 리뷰 삭제
+	$(document).on('click', '.deleteReview', function() {
+		var reviewNo = $(this).data("reviewno");
+		var talentNo = $(this).data("talentno");
+		console.log(reviewNo);
+		console.log(talentNo);
+	  	if (confirm('리뷰를 삭제하시겠습니까?')) {
+		    $.ajax({
+				type : 'DELETE',
+				url : talentNo + "/reviews/" + reviewNo,
+				data : JSON.stringify({
+					reviewNo : reviewNo,
+					talentNo : talentNo
+				}),
+				contentType : "application/json",
+				dataType : 'json',
+				success  : function(reviews) {
+								location.reload();
+				},
+		      error : function(xhr, status, error) {
+				console.log(xhr);
+				alert('리뷰 삭제에 실패하였습니다. 잠시 후 다시 시도해주세요.');
+		      }
+			});
+		}
+	});
+
+	
+	// reviewList 데이터 받아서 리뷰 갯수 및 평균 출력
+	var reviewList = /*[[${reviewList}]]*/[];
+	var reviewCount = reviewList.length;
+	var totalBambooScore = 0;
+	reviewList.forEach(function(review){
+		totalBambooScore += review.bambooScore;
+	});
+	// // 반올림해서 0.5 단위로 계산
+	var avgBambooScore = Math.round((totalBambooScore / reviewCount) * 2) / 2;
+	// 5점 이상일 경우 5점으로 표시
+	if (avgBambooScore > 5) {
+		avgBambooScore = 5;
+	} else if (isNaN(avgBambooScore)){
+		avgBambooScore = 0;
+	}
+	$('#review-filter').text(avgBambooScore.toFixed(1) + ' / (' + reviewCount + ')');
+	
+
+	</script>
+		<!-- 채팅 기능이 필요없는 페이지는 아래 한줄 지워주세요  -->
+	<th:block th:replace="/common/script/chat-js :: chatJsFragment"></th:block>
+</th:block> 
+</html>
+
