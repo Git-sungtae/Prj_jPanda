@@ -5,7 +5,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 import com.kakao.jPanda.common.annotation.NoLoginCheck;
 
@@ -13,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class CommonInterceptor implements HandlerInterceptor{
+public class CommonInterceptor implements HandlerInterceptor, AsyncHandlerInterceptor{
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
@@ -21,20 +23,31 @@ public class CommonInterceptor implements HandlerInterceptor{
 		
 		//view 관련 요청 handler들은 모두 통과시킴
 		//로직 없을 시 Class Casting Error
-        if (!(handler instanceof HandlerMethod)) {
+        if (handler instanceof ResourceHttpRequestHandler) {
+        	log.info("ResourceHttpRequestHandler>>true");
             return true;
         }
         
         NoLoginCheck noLoginCheck = ((HandlerMethod) handler).getMethodAnnotation(NoLoginCheck.class);
-		
+        String contentTypeHeader = request.getHeader("Content-Type");
+        boolean isAjaxRequest = contentTypeHeader != null && contentTypeHeader.startsWith("application/json");
+        
+        
 		if (noLoginCheck == null) {
 			
 			if (memberId != null) {
-				log.info("CommonInterceptor True : memberId is not null");
 				return true;
 			} else {
 				log.info("CommonInterceptor False : memberId null");
-	            response.sendRedirect("/login");
+				if (isAjaxRequest) {
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+					response.setContentType("application/json");
+					response.setCharacterEncoding("UTF-8");
+					response.getWriter().write("{\"redirectUrl\": \"/login\"}");
+				} else {
+					response.sendRedirect("login");
+				}
+				
 	            return false;
 			}
 			
@@ -43,5 +56,13 @@ public class CommonInterceptor implements HandlerInterceptor{
 		}
 		
 	}
+//	@Override
+//	public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response, Object handler)
+//			throws Exception {
+//		log.info("afterConcurrentHandlingStarted called");
+//		response.encodeRedirectURL("/login");
+//	}
+	
+	
 	
 }

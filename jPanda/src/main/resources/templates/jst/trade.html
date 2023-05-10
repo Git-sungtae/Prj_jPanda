@@ -100,6 +100,10 @@
 	}
 	
 	/* Cards */
+	.card:hover{
+		box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4);
+	}
+	
 	.card.text-center{
 		margin-bottom: 3%;
 	}
@@ -246,7 +250,7 @@
 						    <input type="radio" name="issue" value="재능 수준 낮음">재능 수준 낮음<br>
 						    <input type="radio" name="issue" value="기타">기타<br>
 						    <div class="textarea-wrap">
-						    	<textarea id="custom-issue-input" placeholder="사유를 입력해주세요."></textarea>
+						    	<textarea id="custom-issue-input" class="form-control" placeholder="사유를 입력해주세요."></textarea>
 						    </div>	
 						</div>
 						<div class="modal-footer">
@@ -482,7 +486,12 @@
 							}
 						},
 						error : function(xhr, textStatus, errorThrown){
-							alert("end-sell-btn function error : textSatus → " + textStatus + ", " + errorThrown);
+					    	if(xhr.status === 401){
+					    		alert('로그인이 필요합니다.');
+					    		location.replace(JSON.parse(xhr.responseText).redirectUrl);
+					    	} else {
+					    		alert("end-sell-btn function error : " + textStatus + ", " + errorThrown);
+					    	}
 						}
 					}
 				);
@@ -518,7 +527,12 @@
 						}
 					},
 					error : function(xhr, textStatus, errorThrown){
-						alert("repost-btn function error : textSatus → " + textStatus + ", " + errorThrown);
+				    	if(xhr.status === 401){
+				    		alert('로그인이 필요합니다.');
+				    		location.replace(JSON.parse(xhr.responseText).redirectUrl);
+				    	} else {
+				    		alert("repost-btn function error : " + textStatus + ", " + errorThrown);
+				    	}
 					}
 			});	
 		}
@@ -550,7 +564,12 @@
 	
 						},
 						error : function(xhr, textStatus, errorThrown){
-							alert("exchange-btn function error : textSatus → " + textStatus + ", " + errorThrown);
+					    	if(xhr.status === 401){
+					    		alert('로그인이 필요합니다.');
+					    		location.replace(JSON.parse(xhr.responseText).redirectUrl);
+					    	} else {
+					    		alert("exchange-btn function error : " + textStatus + ", " + errorThrown);
+					    	}
 						}
 					}		
 				);	 
@@ -577,7 +596,12 @@
 							$(".filter-button[value='all']").click();	
 						},
 						error : function(xhr, textStatus, errorThrown){
-							alert("re-exchange-btn function error :" + textStatus + ", " + errorThrown);
+					    	if(xhr.status === 401){
+					    		alert('로그인이 필요합니다.');
+					    		location.replace(JSON.parse(xhr.responseText).redirectUrl);
+					    	} else {
+					    		alert("re-exchange-btn function error : " + textStatus + ", " + errorThrown);
+					    	}
 						}
 					}		
 				);	 
@@ -586,7 +610,6 @@
 	});
 	 
 	/**
-	 * 재능환불 신청 버튼
 	 * 팝업창구현 : bootstrap - modal
 	 */
 	$(document).on('show.bs.modal', '#refund-modal', function (event) {
@@ -609,13 +632,17 @@
 			    $("#custom-issue-input").hide();
 			}
 		});
-		
-		$('#refund-submit-btn').on('click', function(){
-			if(confirm('환불 신청을 하시겠습니까?')){
-				if($('input[name=issue]:checked').val() === '기타'){
-				    $('input[name=issue]').val($('#custom-issue-input').val());
-				}		
+	});
+	
+	/**
+	 * 재능환불 신청 버튼
+	 */
+	$(document).on('click', '#refund-submit-btn', function(){
+		if(confirm('환불 신청을 하시겠습니까?')){
+			if($('input[name=issue]:checked').val() === '기타'){
+			    $('input[name=issue]').val($('#custom-issue-input').val());
 			}
+			
 			var talentNo = $("#refund-talentNo").val();
 			var refundBamboo = $("#refund-refundBamboo").val();
 			var issue = $('input[name="issue"]:checked').val();
@@ -632,15 +659,22 @@
 			    success: function(result){
 		    		console.log('Success posted : ' + result);
 		    		alert('재능 환불 신청에 성공하였습니다.');
-			        location.reload();
+		    		$('#refund-modal').modal('hide');
 			    },
-			    error: function(xhr, status, error){
-			        alert("refund-submit-btn function error : " + textStatus + ", " + errorThrown);
+			    error: function(xhr, textStatus, errorThrown){
+			    	if(xhr.status === 401){
+			    		alert('로그인이 필요합니다.');
+			    		$('#refund-modal').modal('hide');
+			    		location.replace(JSON.parse(xhr.responseText).redirectUrl);
+			    	} else {
+			    		alert("refund-submit-btn function error : " + textStatus + ", " + errorThrown);
+			    	}
+			        
 			    }
 			});
-				
-		});
-		
+			
+		}
+			
 	});
 	 
 	/**
@@ -668,7 +702,12 @@
 
 						},
 						error : function(xhr, textStatus, errorThrown){
-							alert("refund-cancle-btn function error : textSatus → " + textStatus + ", " + errorThrown);
+					    	if(xhr.status === 401){
+					    		alert('로그인이 필요합니다.');
+					    		location.replace(JSON.parse(xhr.responseText).redirectUrl);
+					    	} else {
+					    		alert("refund-cancle-btn function error : " + textStatus + ", " + errorThrown);
+					    	}
 						}
 					}
 				);		
@@ -699,7 +738,12 @@
 
 						},
 						error : function(xhr, textStatus, errorThrown){
-							alert("refund-cancle-btn function error : textSatus → " + textStatus + ", " + errorThrown);
+					    	if(xhr.status === 401){
+					    		alert('로그인이 필요합니다.');
+					    		location.replace(JSON.parse(xhr.responseText).redirectUrl);
+					    	} else {
+					    		alert("reject-confirm-btn function error : " + textStatus + ", " + errorThrown);
+					    	}
 						}
 					}
 				);
